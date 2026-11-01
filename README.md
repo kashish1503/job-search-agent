@@ -524,6 +524,3 @@ OpenClaw is a good fit if you want to study or extend:
 
 It is especially relevant for engineers who want more control and inspectability than typical job boards provide.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
