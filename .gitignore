@@ -1,0 +1,23 @@
+dump.rdb
+.env
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/*
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+*.zip
+*.fdb_latexmk
+*.fls
+*.aux
+*.log
+
+/data/resumes
+/data/resume-preview/
+node_modules/
+
+*/jobs.db

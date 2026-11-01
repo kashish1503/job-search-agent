@@ -1,0 +1,23 @@
+services:
+  openclaw:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./resume:/app/resume:ro
+      # Hot reload: only mount the backend so Python edits take effect without rebuild.
+      # Do NOT mount all of ./src — that would shadow src/frontend/dist built into the image.
+      - ./src/backend:/app/src/backend
+      # Frontend dist volume — run `npm run build` in src/frontend/ then restart to pick up changes.
+      - ./src/frontend/dist:/app/src/frontend/dist
+    env_file:
+      - .env
+    environment:
+      - DB_PATH=/app/data/jobs.db
+      - RESUME_DIR=/app/resume
+      - SERPER_API_KEY=${SERPER_API_KEY}
+      - SCRAPERAPI_KEY=${SCRAPERAPI_KEY}
+      - HUNTER_API_KEY=${HUNTER_API_KEY}
+    command: uvicorn src.backend.main:app --host 0.0.0.0 --port 8000 --reload

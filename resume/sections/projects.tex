@@ -1,0 +1,106 @@
+\documentclass[letter,10pt]{article}
+\usepackage{TLCresume}
+\begin{document}
+
+
+% \subsection{{\href{https://github.com/JustUzair/open-source-local-auditor}{SentinelAI --- Local-First AI Security Auditor} \hfill 2025}}
+% \begin{zitemize}
+%   \item Open-source Solidity audit engine ingesting \textbf{573 Cyfrin/Solodit audit reports} into a local \textbf{HNSWlib} vector store (\textbf{19,453 chunks}), K-Means clustered ($K=10$) into labelled vulnerability classes; retrieves cluster-diverse findings at audit time and synthesizes them into a structured \textbf{Security Briefing} — giving agents pattern-aware priors without context redundancy.
+%   \item Four-phase pipeline: \textbf{(1)} deterministic regex pre-scanner produces typed \textit{scan leads} (reentrancy, access control, overflow) with zero LLM cost — local models act as a triage layer, narrowing the attack surface before any expensive cloud LLM call is made; \textbf{(2)} LLM-based \textit{Protocol Map} cartographer extracts entry points, call graphs, and cross-file dependencies; \textbf{(3)} iterative auditor passes with \textit{suspicion propagation} — locations flagged in pass $N$ re-examined in pass $N{+}1$; \textbf{(4)} Supervisor cross-correlates all findings, deduplicates, and severity-ranks the final report.
+%   \item Benchmarked against a real private audit (8 findings: 1H, 3M, 3L, 1I): local \textbf{qwen3.5:27b} matched \textbf{6/8 professional findings} and surfaced \textbf{8+ additional valid vulnerabilities} the paid audit missed.
+%   \item \textbf{Tech}: TypeScript, Ollama, HNSWlib, K-Means Clustering, RAG, LangChain, Solodit
+% \end{zitemize}
+
+% \subsection{{\href{https://github.com/JustUzair/job-search-agent-uzair}{OpenClaw --- Agentic Job Search Engine} \hfill 2025}}
+% \begin{zitemize}
+%   \item Multi-source job aggregation across \textbf{HN Algolia}, \textbf{Greenhouse}, \textbf{Lever}, and \textbf{Ashby} ATS APIs via async \textbf{aiohttp} fan-out, direct JSON endpoints, no scraping fragility; auto-discovers company slugs from HN ``Who is Hiring'' threads and GitHub hiring lists, expanding coverage continuously without manual configuration.
+%   \item \textbf{LLM resume tailoring pipeline}: reads the candidate's \textbf{LaTeX source} directly, rewrites \texttt{experience}, \texttt{projects}, and \texttt{summary} sections against the target JD, repairs malformed LLM-generated JSON automatically, and compiles a production-ready \textbf{PDF via \texttt{latexmk}}, variant history persisted in SQLite with per-variant refinement via feedback loop.
+%   \item \textbf{End-to-end cold outreach engine}: scrapes LinkedIn profiles via ScraperAPI/Serper, infers email addresses from configurable name patterns, generates personalized cold emails via LLM grounded in candidate profile, and dispatches bulk SMTP with rate limiting; full pipeline from name to sent email with zero manual steps.
+%   \item Scheduled \textbf{daily scrape} via APScheduler with \textbf{async LLM batch polling} every 5 minutes, jobs pre-filtered by title regex before any LLM call to eliminate irrelevant roles cheaply; configurable score threshold gates low-signal listings before they reach the queue.
+%   \item \textbf{Tech}: Python, FastAPI, React, SQLite, aiohttp, BeautifulSoup, APScheduler, Docker, Ollama
+% \end{zitemize}
+
+% \subsection{{\href{https://github.com/JustUzair/codecrafters-redis-go}{GoRedis} \hfill 2025}}
+% \begin{zitemize}
+%     \item Built a \textbf{wire-compatible Redis server} in Go with \textbf{zero external dependencies}, with only stdlib; accepts native \textbf{\texttt{redis-cli}} commands with no client-side changes, parses raw TCP via a custom \textbf{RESP protocol parser} handling both bulk and array frames, backed by a \textbf{generic \texttt{Storage[T~any]}} store with \textbf{\texttt{sync.RWMutex}}-guarded reads/writes and TTL expiry at millisecond and second granularity.
+%   \item Single generic cache stores \texttt{string}, \texttt{[]any} (lists), and \texttt{Stream} structs, runtime type identity resolved via \texttt{switch~any(v).(type)} dispatch; supports \textbf{full list semantics} (\texttt{LPUSH}/\texttt{RPUSH}/\texttt{LPOP}/\texttt{LRANGE}/\texttt{LLEN}) with correct negative-index clamping and \textbf{BLPOP} via a \textbf{channel-based notifier}, blocking callers park on a per-key \texttt{chan~struct\{\}} bell that a concurrent \texttt{LPUSH} rings, avoiding polling entirely.
+%   \item \textbf{Streams} (\texttt{XADD}/\texttt{XRANGE}) with full entry ID resolution, partial auto-sequence (\texttt{ms-*}), full auto-ID (\texttt{*}), explicit IDs with monotonicity enforcement; deployed as a \textbf{stateful Kubernetes workload} with a \textbf{local persistence snapshot} enabling in-memory state to survive pod restarts and be shared across replicas.
+%   \item \textbf{Tech}: Go, TCP/RESP, generics, channels, mutexes, Docker, docker-compose, Kubernetes (K8S),  Redis
+% \end{zitemize}
+
+
+% \subsection{{\href{https://github.com/JustUzair/Tessera-RAG-AI}{Tessera} \hfill 2025}}
+% \begin{zitemize}
+%   \item Production RAG platform, constraint-based \textbf{LangChain} agent forbidden from answering without invoking \texttt{kb\_search} tool; \textbf{CacheBackedEmbeddings} to MongoDB KV store cuts re-upload latency \textbf{2.31s → 421ms} (82\% reduction). \textbf{Lighthouse}: Performance 92, Accessibility 96, Best Practices 100, SEO 100.
+%   \item Containerized with \textbf{Docker Compose} (frontend + backend services) and deployed to \textbf{Kubernetes}, \textbf{3-replica} deployments for both tiers, readiness probes, resource limits, Secrets and ConfigMaps injected via a \textbf{CI-style \texttt{deploy.sh}} that builds, pushes to \textbf{Docker Hub}, and applies manifests in one command.
+%   \item \textbf{Tech}: Next.js, Express, MongoDB Atlas, LangChain, Framer Motion, Spline, Docker, docker-compose, Kubernetes (K8S),  Vercel
+% \end{zitemize}
+
+% \subsection{{\href{https://github.com/JustUzair/NFT-Generator}{Mintrrs} \hfill 2024}}
+% \begin{zitemize}
+%   \item Factory Pattern smart contract system deploying isolated \textbf{ERC1155} collection contracts per artist with \textbf{OpenZeppelin} Pausable, Supply, and Ownable extensions; tested end-to-end with \textbf{Foundry}.
+%   \item Dual-payment minting accepting \textbf{native ETH} or \textbf{ERC20 (USDC)}; automated IPFS pipeline via Pinata pins images and metadata as a directory with collection URI written on-chain post-deploy.
+%   \item \textbf{Tech}: Next.js, TypeScript, Solidity, Foundry, Wagmi, Viem, IPFS, MongoDB
+% \end{zitemize}
+
+% \subsection{{\href{https://github.com/JustUzair/Pumpkin-Protocol}{Pumpkin Index Protocol} --- Winner Fantom Q1 2023 Hackathon \hfill 2023}}
+% \begin{zitemize}
+%   \item DeFi protocol for creating and managing crypto indexes on Fantom Blockchain with index creation, management, issuance, and redemption at 0--1\% token fee per year.
+%   \item \textbf{Tech}: Solidity, Hardhat, Next.js, TypeScript, Shadcn-ui, Framer Motion
+% \end{zitemize}
+
+% \subsection{{\href{https://github.com/JustUzair/ThetaFans}{ThetaFans} --- Winner ThetaChain 2023 Hackathon \hfill 2023}}
+% \begin{zitemize}
+%   \item Decentralized creator platform eliminating costly intermediaries via \textbf{multi-tier subscriptions}, \textbf{NFT-gated video network}, and on-chain \textbf{proof-of-subscription}.
+%   \item \textbf{Tech}: Solidity, Hardhat, Next.js, Theta Blockchain, Theta Video API
+% \end{zitemize}
+
+
+
+
+\subsection{{\href{https://github.com/JustUzair/open-source-local-auditor}{SentinelAI | Local-First AI Security Auditor}}}
+\begin{zitemize}
+  \item Ingests \textbf{550+ open source security reports} into a local \textbf{HNSWlib} vector store (\textbf{~19,500 chunks}), K-Means clustered ($K=10$) into vulnerability classes; four-phase pipeline — deterministic pre-scanner narrows attack surface at zero LLM cost, \textit{Protocol Map} cartographer extracts call graphs and entry points, iterative passes propagate suspicions across rounds, Supervisor deduplicates and severity-ranks the final report.
+  \item Benchmarked against a real private audit: local \textbf{qwen3.5:27b} matched \textbf{6/8 professional findings} and surfaced \textbf{8+ additional valid vulnerabilities} the paid audit missed, runs fully local, zero API cost.
+  \item \textbf{Tech}: TypeScript, Ollama, HNSWlib, K-Means, RAG, LangChain, Solodit
+\end{zitemize}
+
+\subsection{{OpenClaw | Agentic Job Search Engine}}
+\begin{zitemize}
+  \item A tool I built and use daily; aggregates jobs across \textbf{HN Algolia}, \textbf{Greenhouse}, \textbf{Lever}, and \textbf{Ashby} ATS APIs via async \textbf{aiohttp} fan-out; auto-discovers company slugs from HN ``Who is Hiring'' threads, scheduled daily with title regex pre-filtering before any LLM call to eliminate irrelevant roles cheaply.
+  \item \textbf{LLM resume tailoring}: reads \textbf{LaTeX source} directly, rewrites \texttt{experience}, \texttt{projects}, and \texttt{summary} against the target JD, auto-repairs malformed JSON, and compiles a \textbf{production PDF via \texttt{latexmk}}, variants persisted in SQLite with per-variant refinement loop.
+  \item \textbf{Cold outreach engine}: scrapes LinkedIn profiles, infers emails from name patterns, generates personalized email templates via local Ollama LLM, dispatches bulk SMTP with rate limiting, name to sent email, zero manual steps.
+  \item \textbf{Tech}: Python, FastAPI, React, SQLite, Docker, Ollama
+\end{zitemize}
+
+\subsection{{\href{https://github.com/JustUzair/codecrafters-redis-go}{GoRedis}}}
+\begin{zitemize}
+  \item \textbf{Wire-compatible Redis server} in Go with \textbf{zero external dependencies}, with only stdlib; accepts native \textbf{\texttt{redis-cli}} with no client changes, custom \textbf{RESP parser} over raw TCP, \textbf{generic \texttt{Storage[T~any]}} with \textbf{RWMutex}-guarded reads/writes and ms/s TTL granularity.
+  \item Full list semantics with correct negative-index clamping; \textbf{BLPOP} via channel-based notifier, callers park on a per-key \texttt{chan~struct\{\}} bell that \texttt{LPUSH} rings, no polling; \textbf{Streams} (\texttt{XADD}/\texttt{XRANGE}) with auto-ID, auto-sequence, and monotonicity enforcement; deployed as a \textbf{stateful K8s workload} with local persistence snapshot for cross-replica state sharing.
+  \item \textbf{Tech}: Go, TCP/RESP, generics, channels, mutexes, Docker, docker-compose, Kubernetes (K8s),  Redis
+\end{zitemize}
+
+\subsection{{\href{https://github.com/JustUzair/Tessera-RAG-AI}{Tessera}}}
+\begin{zitemize}
+  \item Production RAG platform, constraint-based \textbf{LangChain} agent forbidden from answering without invoking \texttt{kb\_search} tool; \textbf{CacheBackedEmbeddings} to MongoDB KV cuts re-upload latency \textbf{~2.31s to ~421ms} (~82\%). \textbf{Lighthouse}: Performance 92, Accessibility 96, Best Practices 100, SEO 100.
+  \item \textbf{Docker Compose} + \textbf{Kubernetes}, 3-replica deployments, readiness probes, resource limits, Secrets/ConfigMaps via \textbf{CI-style \texttt{deploy.sh}} that builds, pushes to Docker Hub, and applies manifests in one command.
+  \item \textbf{Tech}: Next.js, Express, MongoDB Atlas, LangChain, Framer Motion, Docker, Kubernetes, Vercel
+\end{zitemize}
+
+\subsection{{\href{https://github.com/JustUzair/NFT-Generator}{Mintrrs}}}
+\begin{zitemize}
+  \item Factory Pattern smart contract system deploying isolated \textbf{ERC1155} contracts per artist with OpenZeppelin extensions; dual-payment minting (ETH + ERC20), automated IPFS pipeline via Pinata, tested end-to-end with \textbf{Foundry}.
+  \item \textbf{Tech}: Next.js, TypeScript, Solidity, Foundry, Wagmi, Viem, IPFS, MongoDB
+\end{zitemize}
+
+\subsection{{\href{https://github.com/JustUzair/Pumpkin-Protocol}{Pumpkin Index Protocol} --- Winner Fantom Q1 2023 Hackathon}}
+\begin{zitemize}
+  \item DeFi index protocol on Fantom; creation, management, issuance, and redemption at 0--1\% annual fee. \textbf{Tech}: Solidity, Hardhat, Next.js, TypeScript, Framer Motion
+\end{zitemize}
+
+\subsection{{\href{https://github.com/JustUzair/ThetaFans}{ThetaFans} --- Winner ThetaChain 2023 Hackathon}}
+\begin{zitemize}
+  \item Decentralized creator platform with \textbf{NFT-gated video}, multi-tier subscriptions, and on-chain proof-of-subscription. \textbf{Tech}: Solidity, Hardhat, Next.js, Theta Blockchain, Theta Video API
+\end{zitemize}
+
+\end{document}

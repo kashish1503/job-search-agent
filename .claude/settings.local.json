@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl:*)",
+      "Bash(unzip -l /Users/0xjustuzair/Downloads/Resume.zip)",
+      "Bash(unzip:*)",
+      "Bash(latexmk -pdf resume.tex)",
+      "Bash(pdflatex -interaction=nonstopmode resume.tex)",
+      "Bash(sqlite3:*)",
+      "Bash(docker compose:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "claude-flow"
+  ]
+}
