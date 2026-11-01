@@ -35,6 +35,8 @@ Candidate profile + search intent
   -> optional outreach, journal, and interview-prep workflows
 ```
 
+For a visual map of the frontend/backend interaction plus sequence diagrams for discovery, tailoring, and background scraping, see [`docs/architecture.md`](docs/architecture.md). For the JobWatch-port scraping layer (three-tier dispatch, per-source health, discovery feeds), see [`docs/scraping-layer.md`](docs/scraping-layer.md).
+
 ## Why this exists
 
 Most job search tooling is either:

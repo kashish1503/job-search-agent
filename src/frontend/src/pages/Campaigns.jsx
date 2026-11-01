@@ -12,8 +12,7 @@ import {
 const PLUGINS = [
   { id: "ollama_web", label: "Ollama Web" },
   { id: "ats", label: "ATS Direct" },
-  { id: "hn", label: "HN Jobs" },
-  { id: "web3", label: "Web3 Sources" },
+  { id: "watch", label: "Watch (multi-portal)" },
   { id: "manual", label: "Manual URLs" },
 ];
 
@@ -62,8 +61,6 @@ export default function Campaigns() {
   const [enabledPlugins, setEnabledPlugins] = useState([
     "ollama_web",
     "ats",
-    "hn",
-    "web3",
     "manual",
   ]);
 

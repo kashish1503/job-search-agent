@@ -16,7 +16,7 @@ except ImportError:
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
-DEFAULT_PLUGINS = ["ollama_web", "ats", "hn", "web3", "manual"]
+DEFAULT_PLUGINS = ["ollama_web", "ats", "manual"]
 
 ROLE_FAMILY_ALIASES = {
     "ai_native": [
@@ -148,7 +148,7 @@ Return ONLY valid JSON with:
   "aliases": ["Role Title"],
   "avoid_terms": ["avoid phrase"],
   "search_queries": ["search query"],
-  "enabled_plugins": ["ollama_web", "ats", "hn", "web3", "manual"],
+  "enabled_plugins": ["ollama_web", "ats", "manual"],
   "locations": ["remote", "india-friendly"],
   "max_yoe": 5
 }}

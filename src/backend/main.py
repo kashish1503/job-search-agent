@@ -39,78 +39,6 @@ candidate_interview_kb = """
 Resume/Job Application Questions
 
 
-
-Our mission is to accelerate the world’s transition to an open and secure financial system. Could you please tell me how you identify with that mission?*
-I got into security because I believe web3 only works if it's actually secure. Too many protocols launch with preventable vulnerabilities that cost users millions. I want to be part of the infrastructure and the team that makes it harder for developers to make those mistakes. An open financial system means nothing if the code underneath is a liability. That's where I want to contribute. Security isn't just a feature but the need of the hour for any blockchain/ web3 protocols to be viable long term. 
-
-
-How would you describe your knowledge of smart contract security?*
-
-I’ve participated in public contests and  private audits at Nethermind, Shieldify, and GuildAudits. I originally started with Solidity as my main language, but went through Rektoff's Rust bootcamp which opened up Solana auditing for me. From there I picked up Soroban.
-At Nethermind, I worked on re-staking protocols, bridges, governance modules, AA paymasters, oracle systems, vaults, etc, across Solidity and Cairo. At Shieldify, I audited GameFi and LP protocols. With Guild Audits, I reviewed NFT protocols. On Code4rena, I've participated in multiple contests covering oracles, token vesting, marketplaces, etc.
-I've also worked on Solana through the MetaLend engagement, which gave me hands-on experience with Rust-based smart contracts and their specific failure modes. That experience translates directly to understanding Soroban, which I've audited in public contests.
-
-
-What's the most interesting smart contract vulnerability you've discovered or encountered in your work?*
-
-Here are my most notable findings from private and public audits
-—-
-I audited this in a public contest where the oracle’s price update model was built as a massive, monolithic transaction that forces all 1,000 asset prices into a single payload. This design creates a huge 48KB update that consumes nearly 40% of Stellar’s transaction and ledger limits, making it incredibly expensive and risky during network congestion. Because the contract processes everything at once instead of just the assets that changed, it faces a high risk of being deprioritized or rejected during gas price surges, which would stop the oracle from updating and leave integrated protocols with stale data.
-—-
-I found this in a private audit, the game creation function initialized the game state using the full, original bet amount instead of the net amount left over after fees were deducted. Since the liquidity pool only received the remaining funds but the payout logic calculated winnings based on the larger gross figure, the contract would overpay users and lead to insolvency.
-—-
-Another one, in the same audit, where the claim function trusted a user-provided token address instead of validating it against the original token or using the token address from the pool, that was used to create the game. Because the contract uses this arbitrary input to select which liquidity pool to pay out from, a player can claim by swapping a low-value asset with high-value asset like WETH and claim any token of their liking from the pool.
-
-How do you use AI in your personal and professional life? *
-
-Professionally, I use AI to understand new codebases faster, ideate and brainstorm attack vectors, spin up proof of concepts to verify if something is actually exploitable before I spend hours on it. It cuts down the time I actually spend manually writing POCs and verifying claims.
-Personal side is different. I use it kind of like a Life coach and accountability partner for fitness and health related stuff. I dropped about 14 kilos over the past year, not entirely because of AI but it played a solid role in helping me think through and make myself accountable for my actions. No AI fitness apps, purely stuff like ChatGPT etc
-
-
-—
-
-
-
-Tell us about a something you have you have built that had to handle significant scale or complexity. What was the architecture and what trade-offs did you make?
-
-I recently engineered an automated execution engine designed to process real-time predictive data streams and trigger complex system actions asynchronously. The system's primary complexity stemmed from the need for a delegated permission model, allowing an autonomous agentic layer to execute high-stakes operations on behalf of users without requiring manual intervention for every transaction.
-
-Orchestration layer built with TS and LangGraph that utilized real time price predictive data for decision making.
-
-Due to the failure in contractor's core functioning API, I architected a low level payload generator from ground up. This involved construction of complex hex payloads, and cryptographic signatures to ensure the blockchain virtual machine accepted the agent's decision for trades.
-The core architectural tradeoffs we made were making the smart contracts related to the product, protocol agnostic, so it had to depend on the correct execution payload that I mentioned above since, the smart contract itself had no guardrails and relied on the backend supplied hex calldata. This was done so the contractor organization saved thousands of dollars on security audits, since only the initial protocol agnostic vault would have to be audited for security instead of all the new modules
-
-
-Describe a time you had to debug a production issue across multiple services or layers of a distributed system. How did you approach it and what was the outcome?
-
-While working as a Developer and Solutions Engineer at BuildBear, I wore hats for multiple roles, including those of helping our clients to unblock the issues that caused hindrances in their development cycle. Our client reported a critical blocker for Uniswap V2 (Automated Market Maker) which they were closely building with, and simulating its mainnet states with BuildBear (BuildBear in a nutshell, provided mainnet forks in sandbox environment so clients can deploy their dApps and predict their product's working closely). 
-The mainnet has real liquidity and money flowing in and out of contracts and some contracts (protocols) block these features of receiving funds directly in their contract, so the client wanted to manipulate the liquidity (to simulate mainnet price movements) on the sandbox state to be able to continue their development cycle. But the protocol, product worked with would reject token transfers unless they came from a whitelisted source.
-I was assigned to work on providing a solution to the client.
-Firstly, I confirmed if it was an issue on BuildBear's end, once that was confirmed then, I dug deeper into client's report of constant tx reverts, which revealed the issue above.
-Once I pin-point the issue, I researched and developed a work around, that would help client, unblock their issue. The solution was a intermediate contract that would receive the funds and then self-destruct (self destruct in ethereum virtual machine is a way of force feeding contract balances), this helped them burn and mint new liquidity showcasing price movements that projected mainnet's state. I tested this solution extensively on BuildBear and baked the bytecode into the solution itself so the client need only run the script on their part to interact with BuildBear and sync mainnet state for their contracts to work
-
-
-What aspects of the cryptocurrency industry appeal to you, and how do they align with your career goals?*
-
-The most appealing aspect of cryptocurrency is the shift from traditional assets as well as speculative assets to foundational utility of crypto assets. We are currently in the infrastructural development era of blockchain, where the success of users depends entirely on the rigidity in infrastructure and abstraction of the developer experience. My aim is to serve as a force multiplier for builders by creating high performance tooling that makes on chain integration as seamless as traditional web services. If I get a chance to work at Alchemy I won't be starting from zero, I will actually be continuing my contribution to developer experience and community tooling from BuildBear, where I worked at Web3 Solutions Engineer
-
-
-What aspects of startup culture resonate with you, and how do you believe they align with your working style?*
-
-I thrive in startup environments because they prioritize impact over optics and provide the autonomy to solve problems at their root. For example during my term at BuildBear even though my title said Solutions Engineer I wore multiple hats from tester, QA Engineer, to DevRel and Developer. It's a great thing because I got to learn a lot about the company and product much more than I would have just working on my role. This autonomy and freedom is what I value the most in a startup culture
-
-
-— What excites you about joining LiFi?Joining LI.FI is an exciting prospect because it represents the logical next step in my journey of mastering cross-chain infrastructure and automated deployment at scale. Having previously spearheaded the LI.FI bridge plugin for protocol teams while at BuildBear Labs, I have witnessed the complexity that LiFi extracts from the users firsthand. Furthermore I have been using jumper.xyz (jumper.exchange) for my decentralized portfolio and I am yet to find a better tool to do so. Having said that, something I use daily and getting a chance to build it excites me the mostWhat is your experience dealing with integrators?In my recent Solutions Engineering and DevRel role for BuildBear Labs, I served as the technical bridge for external teams integrating our protocols into their applications. I have experience working with Batua (by Pimlico), Across Bridge, LIFI, Chainlink, Uniswap, GMX , Simbolik, Sentio, etc as they were custom plugin for BuildBear particularly, they wouldn't work out of the box with foundry/wagmi frontends.
-So I served as technical go-to for integrations and partner solutions around these products and their plugins 
-You can check the starter tutorials for these plugins here:
-https://www.buildbear.io/docs/tutorials
-
-—-
-
-I’ve worked as Technical writer and Solutions engineer at BuildBear labs, and my primary focus was to find ways to integrate Buildbear into products for companies and clients. So I have experience writing technical documentation as well developing MVPs and POCs from ground up. My most notable write ups and the most impactful ones were Across Bridge and LiFi tutorial, praised by Philipp Zentner himself (https://x.com/_buildbear/status/1915201523832750202?s=46) and drove partnership opportunity for BuildBear as well
-Apart from that I have been working as a Web3 Security Researcher for almost a year now and I’ve done several audits with Nethermind, Kann Audits, Shieldify, RadCipher, GuildAudits.
-My technical writing experience from BuildBear is further enhanced by security research and I’ve developed a knack for learning and research like never before and it keeps on improving. All of these translate to secure development and solutions engineering for clients
-
 """
 
 
@@ -260,6 +188,27 @@ def scrape_status():
         "running": _scrape_state["running"],
         "last_result": _scrape_state["last_result"],
         "last_run": _scrape_state["last_run"],
+    }
+
+
+# ── Source health ─────────────────────────────────────────────────────────────
+
+@app.get("/api/source-health")
+def source_health(run_id: str | None = None, limit: int = 300):
+    """Per-source verdict from the latest (or a given) scraping run.
+
+    ``summary`` tells you at a glance whether a quiet portal was empty or broken.
+    """
+    rows = db.list_source_health(run_id=run_id, limit=limit)
+    return {
+        "summary": db.source_health_summary(run_id),
+        "sources": rows,
+        "attention": [
+            row
+            for row in rows
+            if (row.get("status") in ("failed", "blocked"))
+            or (row.get("completeness") in ("partial", "suspicious_drop"))
+        ],
     }
 
 

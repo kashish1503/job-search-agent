@@ -44,13 +44,12 @@ DEFAULT_CONFIG = {
     "work_type": ["remote", "hybrid"],
     "min_yoe": 0,
     "max_yoe": 5,
-    "exclude_locations": [
-        "onsite only",
-        "onsite us",
-        "onsite uk",
-        "onsite europe",
-        "in-office",
-        "relocation required"
+    "include_locations": [
+        "india",
+        "remote",
+        "worldwide",
+        "anywhere",
+        "apac",
     ],
     "score_threshold": 55,
     # Title substrings to instantly disqualify
@@ -207,6 +206,30 @@ def _migrate(conn):
             found_by_query TEXT DEFAULT '',
             discovered_at TEXT
         )
+    """)
+
+    # Per-source scrape health. This is what separates "the portal had no
+    # openings" from "we failed to read the portal".
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS source_health (
+            run_id         TEXT NOT NULL,
+            company        TEXT NOT NULL,
+            careers_url    TEXT NOT NULL DEFAULT '',
+            status         TEXT DEFAULT '',
+            parser         TEXT DEFAULT '',
+            jobs_found     INTEGER DEFAULT 0,
+            duration_ms    INTEGER DEFAULT 0,
+            error          TEXT DEFAULT '',
+            expected_jobs  INTEGER,
+            coverage_ratio REAL,
+            completeness   TEXT DEFAULT 'unverified',
+            checked_at     TEXT,
+            PRIMARY KEY (run_id, company, careers_url)
+        )
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_source_health_checked
+        ON source_health(checked_at)
     """)
 
     conn.commit()
@@ -459,6 +482,9 @@ def get_config():
     if not row:
         return dict(DEFAULT_CONFIG)
     cfg = json.loads(row[0])
+    # ``exclude_locations`` was replaced by ``include_locations``. Drop it so an
+    # old saved config cannot silently keep the previous behaviour.
+    cfg.pop("exclude_locations", None)
     # Merge any new default keys not yet in the stored config
     for k, v in DEFAULT_CONFIG.items():
         if k not in cfg:
@@ -1091,3 +1117,161 @@ def _ddg_search(query: str, max_results: int = 30) -> list:
             else:
                 print(f"[ddg_search] query={query!r} error: {e}")
     return []
+
+
+# ── Scrape source health ──────────────────────────────────────────────────────
+
+def _now_iso() -> str:
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).isoformat()
+
+
+def save_source_health(run_id: str, results: list) -> list:
+    """Persist one row per source and flag suspicious drops versus the last run.
+
+    ``results`` are dicts with run_id/company/careers_url/status/parser/
+    jobs_found/duration_ms/error/expected_jobs/coverage_ratio/completeness.
+    """
+    if not results:
+        return []
+    conn = get_conn()
+    now = _now_iso()
+    saved = []
+    for item in results:
+        company = item.get("company", "")
+        found = int(item.get("jobs_found") or 0)
+        completeness = item.get("completeness") or "unverified"
+        coverage = item.get("coverage_ratio")
+        previous = conn.execute(
+            """
+            SELECT jobs_found FROM source_health
+            WHERE company = ? AND run_id <> ?
+            ORDER BY checked_at DESC LIMIT 1
+            """,
+            (company, run_id),
+        ).fetchone()
+        previous_jobs = int(previous[0]) if previous else None
+        status = item.get("status", "")
+        if (
+            item.get("expected_jobs") is None
+            and previous_jobs is not None
+            and previous_jobs >= 10
+            and found < previous_jobs * 0.5
+            and status not in ("failed", "blocked")
+        ):
+            completeness = "suspicious_drop"
+            coverage = found / previous_jobs
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO source_health
+            (run_id, company, careers_url, status, parser, jobs_found, duration_ms,
+             error, expected_jobs, coverage_ratio, completeness, checked_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                run_id,
+                company,
+                item.get("careers_url", ""),
+                status,
+                item.get("parser", ""),
+                found,
+                int(item.get("duration_ms") or 0),
+                (item.get("error") or "")[:2000],
+                item.get("expected_jobs"),
+                coverage,
+                completeness,
+                now,
+            ),
+        )
+        saved.append(
+            {
+                **item,
+                "previous_jobs": previous_jobs,
+                "completeness": completeness,
+                "coverage_ratio": coverage,
+                "checked_at": now,
+            }
+        )
+    conn.commit()
+    conn.close()
+    return saved
+
+
+def latest_source_health_run() -> str:
+    conn = get_conn()
+    row = conn.execute(
+        "SELECT run_id FROM source_health ORDER BY checked_at DESC LIMIT 1"
+    ).fetchone()
+    conn.close()
+    return row[0] if row else ""
+
+
+def list_source_health(run_id: str | None = None, limit: int = 300) -> list:
+    conn = get_conn()
+    if not run_id:
+        run_id = latest_source_health_run()
+    rows = conn.execute(
+        """
+        SELECT run_id, company, careers_url, status, parser, jobs_found,
+               duration_ms, error, expected_jobs, coverage_ratio, completeness,
+               checked_at
+        FROM source_health
+        WHERE run_id = ?
+        ORDER BY
+          CASE status WHEN 'failed' THEN 0 WHEN 'blocked' THEN 1 ELSE 2 END,
+          CASE completeness WHEN 'suspicious_drop' THEN 0 WHEN 'partial' THEN 1 ELSE 2 END,
+          company
+        LIMIT ?
+        """,
+        (run_id, limit),
+    ).fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+def source_health_summary(run_id: str | None = None) -> dict:
+    rows = list_source_health(run_id, limit=100000)
+    summary = {
+        "run_id": run_id or latest_source_health_run(),
+        "sources": len(rows),
+        "jobs_found": sum(row.get("jobs_found") or 0 for row in rows),
+        "working": 0,
+        "empty": 0,
+        "fallback": 0,
+        "blocked": 0,
+        "failed": 0,
+        "verified": 0,
+        "structured": 0,
+        "bounded": 0,
+        "partial": 0,
+        "suspicious_drop": 0,
+        "unverified": 0,
+    }
+    for row in rows:
+        status = row.get("status") or ""
+        completeness = row.get("completeness") or ""
+        if status in summary:
+            summary[status] += 1
+        if completeness in summary:
+            summary[completeness] += 1
+    return summary
+
+
+def list_watch_companies(limit: int = 300) -> list:
+    """ATS registry entries ordered by least recently scraped by the watch layer."""
+    conn = get_conn()
+    rows = conn.execute(
+        """
+        SELECT c.id, c.platform, c.slug, c.company_name,
+               (SELECT MAX(h.checked_at) FROM source_health h
+                WHERE h.company = c.company_name OR h.company = c.slug) AS last_checked
+        FROM ats_companies c
+        WHERE c.active = 1
+        ORDER BY COALESCE(last_checked, '') ASC, c.company_name ASC
+        LIMIT ?
+        """,
+        (limit,),
+    ).fetchall()
+    conn.close()
+    return [dict(row) for row in rows]

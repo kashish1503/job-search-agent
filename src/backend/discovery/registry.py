@@ -1,19 +1,22 @@
 from __future__ import annotations
 
 from .ats import ATSDiscovery
-from .hn import HNDiscovery
 from .manual import ManualURLDiscovery
 from .ollama_web import OllamaWebDiscovery
-from .web3 import Web3Discovery
+
+try:  # optional: needs httpx/beautifulsoup
+    from .watch import WatchDiscovery
+except Exception:  # pragma: no cover - dependency missing
+    WatchDiscovery = None
 
 
 PLUGIN_TYPES = {
     "ollama_web": OllamaWebDiscovery,
     "ats": ATSDiscovery,
-    "hn": HNDiscovery,
-    "web3": Web3Discovery,
     "manual": ManualURLDiscovery,
 }
+if WatchDiscovery is not None:
+    PLUGIN_TYPES["watch"] = WatchDiscovery
 
 
 def get_plugin(name: str):

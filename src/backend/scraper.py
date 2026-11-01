@@ -16,6 +16,16 @@ except ImportError:
     import db, llm
     import sources_ats
 
+# Optional: the JobWatch-style scraping layer. Imported defensively so the
+# existing sources keep working if httpx/beautifulsoup are not installed yet.
+try:
+    from . import scraping
+except ImportError:
+    try:
+        import scraping
+    except Exception:  # missing third-party dependency
+        scraping = None
+
 IST = timezone(timedelta(hours=5, minutes=30))
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; job-hunter-bot/1.0)"}
 
@@ -502,6 +512,67 @@ def _find_careers(company_name: str) -> str:
     return ""
 # ── Filtering ─────────────────────────────────────────────────────────────────
 
+# Known shorthand for the include-locations filter. An entry such as "india"
+# also matches its common city names, so users don't have to list every hub.
+LOCATION_ALIASES = {
+    "india": (
+        "bengaluru", "bangalore", "hyderabad", "pune", "gurugram", "gurgaon",
+        "noida", "new delhi", "delhi", "mumbai", "chennai", "kolkata",
+        "ahmedabad", "jaipur", "indore", "coimbatore", "kochi", "trivandrum",
+    ),
+    "remote": (
+        "work from home", "wfh", "anywhere", "worldwide", "distributed",
+        "telecommute", "telecommuting", "global",
+    ),
+    "apac": (
+        "asia pacific", "singapore", "indonesia", "vietnam", "philippines",
+        "malaysia", "japan", "australia",
+    ),
+    "usa": (
+        "united states", "u.s.", "us only", "us-based", "new york",
+        "san francisco", "seattle", "austin", "boston",
+    ),
+    "uk": ("united kingdom", "london", "england", "scotland", "wales"),
+    "europe": (
+        "emea", "eu only", "germany", "berlin", "netherlands", "amsterdam",
+        "france", "paris", "spain", "portugal", "poland",
+    ),
+    "canada": ("toronto", "vancouver", "montreal"),
+}
+
+
+def _location_hit(text: str, term: str) -> bool:
+    """Whole-word match so 'india' does not match 'Indiana'."""
+    for variant in (term, *LOCATION_ALIASES.get(term, ())):
+        if re.search(rf"(?<![a-z0-9]){re.escape(variant)}(?![a-z0-9])", text):
+            return True
+    return False
+
+
+def passes_location_filter(job: dict, cfg: dict) -> bool:
+    """Allow-list filter: keep jobs whose location matches an include entry.
+
+    Semantics:
+      * no ``include_locations`` configured -> keep everything;
+      * match location first, fall back to description when location is blank;
+      * no usable text -> keep the job (unknown, not a known mismatch).
+    """
+    terms = [
+        str(term).strip().lower()
+        for term in cfg.get("include_locations", [])
+        if str(term).strip()
+    ]
+    if not terms:
+        return True
+
+    location = (job.get("location") or "").strip().lower()
+    text = location or (job.get("description") or "").lower()
+    if not text:
+        return True
+
+    return any(_location_hit(text, term) for term in terms)
+
+
 def passes_filters(job: dict, cfg: dict) -> bool:
     """Return True if job passes the user's search config filters."""
     text = f"{job.get('title','')} {job.get('description','')}".lower()
@@ -518,10 +589,8 @@ def passes_filters(job: dict, cfg: dict) -> bool:
         if job_wt != "unspecified" and job_wt not in allowed_types:
             return False
 
-    # Exclude locations
-    exclude = [loc.lower() for loc in cfg.get("exclude_locations", [])]
-    loc_text = f"{job.get('location','')} {job.get('description','')}".lower()
-    if any(ex in loc_text for ex in exclude):
+    # Location allow-list
+    if not passes_location_filter(job, cfg):
         return False
 
     # YoE filter — parse stated requirement from job text and compare to config
@@ -1005,28 +1074,51 @@ def scrape_ddg_site_search(max_combos_per_run: int = 20) -> list:
 def run_scrape(sources=None):
     db.init_db()
     cfg = db.get_config()
-    active = sources or ["hn_jobs", "hn_jobs_page", "web3career", "cryptorank", "dropstab", "ats", "ddg_site_search", "jobstash", "solana_jobs"]
+    active = sources or ["watch", "ats", "ddg_site_search", "jobstash"]
     skip_titles = cfg.get("skip_title_patterns", [])
     raw = []
 
-    if "hn_jobs" in active:
-        j = scrape_hn_jobs(); print(f"  hn_jobs: {len(j)}"); raw += j
-    if "hn_jobs_page" in active:
-        j = scrape_hn_jobs_page(); print(f"  hn_jobs_page: {len(j)}"); raw += j
-    if "web3career" in active:
-        j = scrape_web3career(); print(f"  web3career: {len(j)}"); raw += j
-    if "cryptorank" in active:
-        j = scrape_cryptorank_funding(); print(f"  cryptorank: {len(j)}"); raw += j
-    if "dropstab" in active:
-        j = scrape_dropstab(); print(f"  dropstab: {len(j)}"); raw += j
+    # JobWatch-style layer: three-tier dispatcher + discovery feeds.
+    # Runs first so ATS ids it emits are already in `raw` when the legacy
+    # fetchers dedupe below (ids match for greenhouse/lever/ashby).
+    if "watch" in active:
+        if scraping is None:
+            print("  watch: skipped (httpx/beautifulsoup not installed)")
+        else:
+            try:
+                j = scraping.scrape_jobs(); print(f"  watch: {len(j)}"); raw += j
+                s = scraping.health_summary() or {}
+                print(
+                    "  watch health: sources={} working={} empty={} fallback={} "
+                    "failed={} blocked={} partial={}".format(
+                        s.get("sources", 0), s.get("working", 0), s.get("empty", 0),
+                        s.get("fallback", 0), s.get("failed", 0),
+                        s.get("blocked", 0), s.get("partial", 0),
+                    )
+                )
+            except Exception as e:
+                print(f"  watch: failed ({type(e).__name__}: {e})")
     if "ats" in active:
         j = sources_ats.scrape_ats(); print(f"  ats: {len(j)}"); raw += j
     if "jobstash" in active:
         j = scrape_jobstash(); print(f"  jobstash: {len(j)}"); raw += j
-    if "solana_jobs" in active:
-        j = scrape_solana_jobs(); print(f"  solana_jobs: {len(j)}"); raw += j
     # if "ddg_site_search" in active:
     #     j = scrape_ddg_site_search(); print(f"  ddg_site_search: {len(j)}"); raw += j
+
+    # Sources can overlap (watch reuses the ATS registry and emits the same ids
+    # as sources_ats). Dedupe before scoring so no job is paid for twice.
+    seen_ids = set()
+    deduped = []
+    for job in raw:
+        jid = job.get("id")
+        if jid and jid in seen_ids:
+            continue
+        if jid:
+            seen_ids.add(jid)
+        deduped.append(job)
+    if len(deduped) != len(raw):
+        print(f"[scrape] deduped {len(raw) - len(deduped)} overlapping source rows")
+    raw = deduped
 
     # 1. Title pre-filter — cheapest check, runs before everything else
     title_passed = [j for j in raw if passes_title_filter(j.get("title", ""), skip_titles)]

@@ -4,7 +4,7 @@
 
 ---
 
-## What is OpenClaw?
+## What is job-search-agent ?
 
 A self-hosted, local-first job hunting pipeline for a software engineer actively searching for remote Web3 / backend / AI roles. It runs entirely inside Docker (`docker compose up`), exposes a React dashboard at `http://localhost:8000`, and has no external server cost. It scrapes multiple job sources, scores every listing against a candidate profile using an LLM, tailors your LaTeX resume to each role, compiles it to PDF, and lets you manage the whole application workflow from one UI.
 
@@ -128,7 +128,7 @@ openclaw-scraper/
 | keywords | web3, blockchain, ... | Job text must match ≥1 keyword |
 | work_type | ["remote"] | Allowed work types |
 | min_yoe / max_yoe | 0 / 5 | YoE range filter |
-| exclude_locations | [...] | Strings that must not appear in job text |
+| include_locations | [...] | Allow-list of locations a job must match (empty = keep all) |
 | score_threshold | 60 | Minimum LLM score to surface a job |
 | skip_title_patterns | [...] | Title substrings that instantly disqualify a job (pre-LLM). Catches marketing, HR, mechanical engineer, etc. Edit via Config page raw JSON. |
 
@@ -251,7 +251,7 @@ Searches `"<company>" jobs careers` via the DDG HTML endpoint. Prioritises resul
 **Step 2 — Search config filter (`passes_filters`)** runs after title filter. Checks:
 1. **Keywords** — job text must contain at least one keyword from config (case-insensitive)
 2. **Work type** — if config has `work_type` list, job's detected work type must match (unspecified jobs pass through)
-3. **Exclude locations** — any string in `exclude_locations` list must not appear in job text/location
+3. **Include locations** — job location must match at least one entry in `include_locations` (empty list keeps everything; shorthands like `india`/`remote` expand to common city/remote terms; blank locations pass as unknown)
 4. **YoE cap** — regex `(\d+)\s*(?:\+|to|-|–)?\s*\d*\s*years?\s*(?:of\s*)?(?:experience|exp)` extracts required minimum years from description; if that number exceeds `max_yoe`, job is filtered out
 
 Default config: keywords include web3/blockchain/solidity/fullstack/backend/go/python/AI/LLM, work_type=remote, max_yoe=5.

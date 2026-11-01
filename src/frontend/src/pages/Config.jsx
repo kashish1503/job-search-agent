@@ -268,11 +268,18 @@ export default function Config() {
           </div>
         </div>
 
-        <TagInput
-          label="Exclude Locations"
-          values={cfg.exclude_locations || []}
-          onChange={v => update("exclude_locations", v)}
-        />
+        <div>
+          <TagInput
+            label="Include Locations"
+            values={cfg.include_locations || []}
+            onChange={v => update("include_locations", v)}
+          />
+          <p className="text-slate-500 text-xs mt-1">
+            Only keep jobs whose location matches one of these. Shorthands like{" "}
+            <code className="bg-slate-700 px-1 rounded">india</code> also match
+            major cities; leave empty to keep every location.
+          </p>
+        </div>
 
         {/* <div>
           <label className="block text-sm text-slate-400 mb-1">
